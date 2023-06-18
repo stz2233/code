@@ -1,0 +1,40 @@
+mport cv2
+import numpy as np
+
+def is_inside(o,i)://#如果o框在i框里面，那么就返回True，否则，返回False
+    ox,oy,ow,oh = o
+    ix,iy,iw,ih = i
+    return ox > ix and oy > iy and ox + ow < ix + iw and oy + oh < iy + ih
+
+def draw_person(image,person):#给检测出来的人画框
+    x,y,w,h = person
+    cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,255),2)
+    
+img = cv2.imread('E:\opencv3\charpter7\people1.jpg')
+
+//#opencv自带的HOGDescriptor可以检测人，作为检测人的默认检测器
+hog = cv2.HOGDescriptor()#定义一个模型
+hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())#分类是基于人的分类
+
+found,w = hog.detectMultiScale(img)#这里用detectMultiScale来加载图像
+#print(found)//#found是矩形框的信息，坐标和宽高
+#print(w)//#w得到的是每一个矩形的置信度
+
+found_filtered = []
+for ri,r in enumerate(found):
+#    print('ri:',ri,'r:',r)
+    for qi,q in enumerate(found):
+#        print('qi:',qi,'q:',q)
+        if ri != qi and is_inside(r,q):#如果是索引不同的两个框，并且r框在q框里面完全包含了，就直接break
+            print('过')#这里我们发现没有这种不同框相互包含的情况，三个框都不是相互包含的关系
+            break
+        else:
+            found_filtered.append(r)
+            
+for person in found_filtered:
+#    print(person)
+    draw_person(img,person)
+    
+cv2.imshow('PEOPLE DETECTION',img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
